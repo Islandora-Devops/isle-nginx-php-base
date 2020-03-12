@@ -2,7 +2,7 @@
 
 A Docker base image which adds NGINX in a PHP image container then use [supervisord](http://supervisord.org/) as the process manager to run both services.
 
-This image can be used for any php app but it has some php and nginx [confd](http://www.confd.io/) templates, customized to work with a drupal app, which can be initialized in the app image extending this one.
+This image can be used for any php app but it has some php and nginx [confd](http://www.confd.io/) templates which can be initialized in the app image extending this one.
 
 ## Working with this image
 
@@ -72,3 +72,19 @@ RUN pecl install xdebug-2.7.1; \
 # Copy composer binary from official Composer image. Notice we didn't need composer for prod stage.
 COPY --from=composer:1.9.3 /usr/bin/composer /usr/bin/composer
 ```
+
+## Note
+
+If you are planning to use the configurations files unde `config/confd` and stored in the base image under `/confd_templates`. You will need to:
+
+- Move the files to `/etc/confd/conf.d` inside the app dockerfile:
+
+```bash
+RUN mkdir -p /etc/confd/conf.d /etc/confd/templates; \
+    mv /confd_templates/nginx/conf.d/* /etc/confd/conf.d/; \
+    mv /confd_templates/php/conf.d/* /etc/confd/conf.d/; \
+    mv /confd_templates/nginx/templates/* /etc/confd/templates/; \
+    mv /confd_templates/php/templates/* /etc/confd/templates/
+```
+
+- If this app is not drupal provide a default nginx virtual host configuration file template to replace the one at `/etc/confd/templates/vhost.conf.tmpl`.

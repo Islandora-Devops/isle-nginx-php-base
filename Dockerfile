@@ -168,7 +168,7 @@ COPY config/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
 # Copy customized configurations for php and nginx which can then be instantiated
 # by any other image which extend this one.
-COPY config/drupal/confd /confd_drupal_templates
+COPY config/confd /confd_templates
 
 # Also copying script which can be used by a drupal image. Other non drupal app
 # which are building from this image should probably delete this folder.
