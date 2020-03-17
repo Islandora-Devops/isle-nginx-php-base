@@ -3,6 +3,9 @@ ARG php_pkg_release=fpm-buster
 
 FROM php:${php_version}-${php_pkg_release}
 
+LABEL dev.nikathone.name="php-nginx" \
+  dev.nikathone.vcs-url="gitlab.com/nikathone/drupal-docker-good-defaults"
+
 ARG nginx_version=1.17.8
 ARG nginx_njs_version=0.3.8
 ARG nginx_pkg_release=1~buster
@@ -11,8 +14,7 @@ ENV CONFD_VERSION=0.16.0 \
   CONFD_SHA256SUM="255d2559f3824dd64df059bdc533fd6b697c070db603c76aaf8d1d5e6b0cc334" \
   FILES_DIR="/mnt/files" \
   APP_ROOT="/var/www/app" \
-  APP_DOCROOT="/var/www/app/web" \
-  APP_RUNNER_USER=root
+  APP_DOCROOT="/var/www/app/web"
 
 # Install apt dependencies
 # @TODO use specific versions of some of these to avoid version conflict or breaking
@@ -109,7 +111,7 @@ RUN docker-php-ext-configure imap --with-kerberos --with-imap-ssl \
   mcrypt \
   yaml
 
-# Install nginx (copied from official nginx Dockerfile https://github.com/nginxinc/docker-nginx/blob/c817e28dd68b6daa33265a8cb527b1c4cd723b59/mainline/buster/Dockerfile)
+# install nginx (copied from official nginx Dockerfile https://github.com/nginxinc/docker-nginx/blob/c817e28dd68b6daa33265a8cb527b1c4cd723b59/mainline/buster/Dockerfile)
 ENV NGINX_VERSION=${nginx_version} \
   NGINX_PKG_RELEASE=${nginx_pkg_release} \
   NJS_VERSION=${nginx_njs_version} \
@@ -168,10 +170,11 @@ COPY config/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
 # Copy customized configurations for php and nginx which can then be instantiated
 # by any other image which extend this one.
-COPY config/confd /confd_templates
+COPY --chown=root:root config/templates/nginx_php_confd /confd_templates
+COPY --chown=root:root config/templates/app_confd /drupal/confd
 
 # Also copying script which can be used by a drupal image. Other non drupal app
 # which are building from this image should probably delete this folder.
-COPY drupal_bin /drupal_bin
+COPY --chown=root:root drupal_bin /drupal/bin
 
 CMD ["/usr/bin/supervisord", "-n", "-c", "/etc/supervisor/conf.d/supervisord.conf"]

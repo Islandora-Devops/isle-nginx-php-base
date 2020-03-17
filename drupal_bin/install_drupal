@@ -58,6 +58,23 @@ else
     site_install_options+=( --debug )
   fi
 
+  # Getting the copy of the settings.php file since Drupal will overwrite the db credentials in it.
+  # We don't want this cause they are in settings.isle.php
+  cp ${APP_DOCROOT}/sites/default/settings.php /tmp/settings.php
+
   # Installing drupal
   ${APP_ROOT}/vendor/bin/drush site:install "${site_install_options[@]}"
+
+  # Making sure that the current user has the proper permission to overwrite the settings.php
+  # file.
+  chmod u+w ${APP_DOCROOT}/sites/default/settings.php
+  cp --force /tmp/settings.php ${APP_DOCROOT}/sites/default/settings.php && rm /tmp/settings.php
+
+  # Clearing the cache since we have restored the previous settings.php
+  ${APP_ROOT}/vendor/bin/drush cr
+
+  # Printing the site status for debugging purpose.
+  if [[ -n "${DEBUG}" ]]; then
+    ${APP_ROOT}/vendor/bin/drush status
+  fi
 fi
