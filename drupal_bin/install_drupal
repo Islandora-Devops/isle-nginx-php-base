@@ -73,6 +73,9 @@ else
   # Clearing the cache since we have restored the previous settings.php
   ${APP_ROOT}/vendor/bin/drush cr
 
+  # Running migrations
+  ${APP_ROOT}/vendor/bin/drush -y migrate:import --userid=1 -l ${DRUSH_OPTIONS_URI} --group islandora
+
   # Printing the site status for debugging purpose.
   if [[ -n "${DEBUG}" ]]; then
     ${APP_ROOT}/vendor/bin/drush status
